@@ -11,7 +11,7 @@ class WhatsAppMessage(BaseModel):
     data: dict
 
 # Número autorizado para testes
-NUMERO_TESTE = "5511976829298"  # Incluindo DDI do Brasil
+NUMERO_TESTE = "11976829298"
 
 # Função para enviar mensagem via API do WhatsApp
 def enviar_mensagem(numero_telefone: str, mensagem: str):
@@ -21,12 +21,13 @@ def enviar_mensagem(numero_telefone: str, mensagem: str):
         "Content-Type": "application/json"
     }
     payload = {
-        "number": numero_telefone,  # Corrigido para "number"
+        "to": numero_telefone,
         "type": "chat",
         "text": mensagem,
         "serviceId": "8e473787-7548-417f-83e1-5eb1bd533d6f",
-        "userId": "d2787b46-36fd-4718-93f7-1c86f0e3cab9",
+        "userId" :"d2787b46-36fd-4718-93f7-1c86f0e3cab9",
         "dontOpenTicket": True
+    
     }
     response = requests.post(url, json=payload, headers=headers)
     
@@ -41,31 +42,23 @@ def enviar_mensagem(numero_telefone: str, mensagem: str):
 async def receive_webhook(request: Request):
     try:
         payload = await request.json()
+        print("=== Webhook recebido ===")
+        print(payload)
+        print("========================")
+        
         event_type = payload.get("event")
         message_data = payload.get("data", {})
 
-        # Log formatado para melhor visualização
-        print("============================")
-        print(f"Evento recebido: {event_type}")
-        print(f"Dados: {message_data}")
-        print("============================")
-
-        # Capturar o número real do telefone do usuário
-        contact_id = message_data.get("contactId", "")
-        numero_telefone = message_data.get("idFromService", "")
-
-        # Se o número vier no formato "5511976829298@c.us", remover "@c.us"
-        if numero_telefone and "@c.us" in numero_telefone:
-            numero_telefone = numero_telefone.replace("@c.us", "")
-
-        # Se o número não foi encontrado, buscar em "data.number"
-        if not numero_telefone:
-            numero_telefone = message_data.get("data", {}).get("number", "")
-
-        text = message_data.get("text", "").strip()  # Evita erro caso text seja None e remove espaços extras
-
-        if not text or not contact_id or not numero_telefone:
-            raise HTTPException(status_code=400, detail="Dados inválidos")
+        # Validando os dados recebidos
+        if not isinstance(message_data, dict):
+            raise HTTPException(status_code=400, detail="Formato inválido para 'data'")
+        
+        text = message_data.get("text")  # Pode ser None
+        contact_id = message_data.get("contactId")  # Pode ser None
+        numero_telefone = message_data.get("fromId")  # Pode ser None
+        
+        if not event_type or not text or not contact_id or not numero_telefone:
+            raise HTTPException(status_code=400, detail="Dados obrigatórios ausentes ou inválidos")
         
         print(f"Mensagem recebida de {contact_id} ({numero_telefone}): {text}")
         
