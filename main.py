@@ -36,7 +36,7 @@ def enviar_mensagem(numero_telefone: str, mensagem: str):
         "Authorization": f"Bearer {API_TOKEN}",
         "Content-Type": "application/json"
     }
-    payload = {
+    data = {
         "to": numero_telefone,
         "type": "chat",
         "text": mensagem,
@@ -45,7 +45,7 @@ def enviar_mensagem(numero_telefone: str, mensagem: str):
         "dontOpenTicket": True
     
     }
-    response = requests.post(url, json=payload, headers=headers)
+    response = requests.post(url, headers=headers, json=data)
     
     if response.status_code == 200:
         print("Mensagem enviada com sucesso!")
@@ -90,7 +90,7 @@ async def receive_webhook(request: Request):
         print(f"Comparação com número teste: {numero_telefone == NUMERO_TESTE}")
         
         # Verifica se a mensagem foi enviada pelo número de teste e se o texto é "teste"
-        if numero_telefone == NUMERO_TESTE and text.lower() == "teste":
+        if numero_telefone == NUMERO_TESTE:
             enviar_mensagem(numero_telefone, "Recebemos sua mensagem de teste!")
             return {"status": "success", "message": "Mensagem de teste processada!", "event": event_type}
         
