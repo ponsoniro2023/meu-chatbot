@@ -11,7 +11,7 @@ class WhatsAppMessage(BaseModel):
     data: dict
 
 # Número autorizado para testes
-NUMERO_TESTE = "11976829298"
+NUMERO_TESTE = "5511976829298"
 
 # Função para enviar mensagem via API do WhatsApp
 def enviar_mensagem(numero_telefone: str, mensagem: str):
@@ -21,7 +21,7 @@ def enviar_mensagem(numero_telefone: str, mensagem: str):
         "Content-Type": "application/json"
     }
     payload = {
-        "to": numero_telefone,
+        "number": numero_telefone,
         "type": "chat",
         "text": mensagem,
         "serviceId": "8e473787-7548-417f-83e1-5eb1bd533d6f",
