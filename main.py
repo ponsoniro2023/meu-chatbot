@@ -18,8 +18,13 @@ def enviar_mensagem(numero_telefone: str, mensagem: str):
     payload = {
         "number": numero_telefone,  # Corrigido para "number"
         "type": "chat",
-        "text": mensagem
+        "text": mensagem,
+        "serviceId": "8e473787-7548-417f-83e1-5eb1bd533d6f",
+        "userId" :"d2787b46-36fd-4718-93f7-1c86f0e3cab9",
+        "dontOpenTicket": True
+    
     }
+    
     response = requests.post(url, json=payload, headers=headers)
     
     if response.status_code == 200:
