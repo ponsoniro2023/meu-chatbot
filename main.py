@@ -24,7 +24,7 @@ def obter_numero_telefone(contact_id):
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
         contact_data = response.json()
-        return contact_data.get("phone")  # Ajuste conforme a resposta real da API
+        return contact_data.get("data", {}).get("number")  # Ajuste conforme a resposta real da API
     else:
         print(f"Erro ao buscar número de telefone para {contact_id}: {response.text}")
         return None
@@ -81,7 +81,9 @@ async def receive_webhook(request: Request):
         print(f"Contact ID recebido: {contact_id}")
         
         # Obtém o número de telefone real, se necessário
-        if not numero_telefone:
+        if numero_telefone and "@c.us" in numero_telefone:
+            numero_telefone = numero_telefone.split("@")[0]
+        else:
             numero_telefone = obter_numero_telefone(contact_id)
         
         print(f"Número de telefone final: {numero_telefone}")
