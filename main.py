@@ -13,6 +13,22 @@ class WhatsAppMessage(BaseModel):
 # Número autorizado para testes
 NUMERO_TESTE = "5511976829298"
 
+# Função para buscar número de telefone pelo contactId
+def obter_numero_telefone(contact_id):
+    url = f"{API_BASE_URL}/contacts/{contact_id}"
+    headers = {
+        "Authorization": f"Bearer {API_TOKEN}",
+        "Content-Type": "application/json"
+    }
+    
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        contact_data = response.json()
+        return contact_data.get("phone")  # Ajuste conforme a resposta real da API
+    else:
+        print(f"Erro ao buscar número de telefone para {contact_id}: {response.text}")
+        return None
+
 # Função para enviar mensagem via API do WhatsApp
 def enviar_mensagem(numero_telefone: str, mensagem: str):
     url = f"{API_BASE_URL}/messages"
@@ -21,7 +37,7 @@ def enviar_mensagem(numero_telefone: str, mensagem: str):
         "Content-Type": "application/json"
     }
     payload = {
-        "number": numero_telefone,
+        "to": numero_telefone,
         "type": "chat",
         "text": mensagem,
         "serviceId": "8e473787-7548-417f-83e1-5eb1bd533d6f",
@@ -57,10 +73,19 @@ async def receive_webhook(request: Request):
         contact_id = message_data.get("contactId")  # Pode ser None
         numero_telefone = message_data.get("fromId")  # Pode ser None
         
-        if not event_type or not text or not contact_id or not numero_telefone:
+        if not event_type or not text or not contact_id:
             raise HTTPException(status_code=400, detail="Dados obrigatórios ausentes ou inválidos")
         
-        print(f"Mensagem recebida de {contact_id} ({numero_telefone}): {text}")
+        print(f"Texto recebido: {text}")
+        print(f"From ID recebido: {numero_telefone}")
+        print(f"Contact ID recebido: {contact_id}")
+        
+        # Obtém o número de telefone real, se necessário
+        if not numero_telefone:
+            numero_telefone = obter_numero_telefone(contact_id)
+        
+        print(f"Número de telefone final: {numero_telefone}")
+        print(f"Comparação com número teste: {numero_telefone == NUMERO_TESTE}")
         
         # Verifica se a mensagem foi enviada pelo número de teste e se o texto é "teste"
         if numero_telefone == NUMERO_TESTE and text.lower() == "teste":
