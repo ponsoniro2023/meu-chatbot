@@ -21,12 +21,9 @@ def enviar_mensagem(numero_telefone: str, mensagem: str):
         "Content-Type": "application/json"
     }
     payload = {
-        "number": numero_telefone,
+        "to": numero_telefone,
         "type": "chat",
         "text": mensagem
-        "serviceId": "8e473787-7548-417f-83e1-5eb1bd533d6f",
-        "userId" :"d2787b46-36fd-4718-93f7-1c86f0e3cab9",
-        "dontOpenTicket": True
     }
     response = requests.post(url, json=payload, headers=headers)
     
@@ -52,9 +49,9 @@ async def receive_webhook(request: Request):
 
         # Filtrar apenas eventos de mensagens de chat
         if event_type in ["message.updated", "message.created"] and message_data.get("type") == "chat":
-            text = message_data.get("text")
-            contact_id = message_data.get("contactId")
-            numero_telefone = message_data.get("fromId")  # Ajuste para pegar o número correto
+            text = message_data.get("text", "")  # Evita erro caso text seja None
+            contact_id = message_data.get("contactId", "")
+            numero_telefone = message_data.get("fromId", "")
 
             if not text or not contact_id or not numero_telefone:
                 raise HTTPException(status_code=400, detail="Dados inválidos")
