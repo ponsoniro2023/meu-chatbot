@@ -6,7 +6,7 @@ from config import API_BASE_URL, API_TOKEN
 app = FastAPI()
 
 # Número autorizado para testes
-NUMERO_TESTE = "5511976829298"  # Ajustei para incluir o DDI do Brasil (55)
+NUMERO_TESTE = "5511976829298"  # Formato correto com DDI do Brasil
 
 # Função para enviar mensagem via API do WhatsApp
 def enviar_mensagem(numero_telefone: str, mensagem: str):
@@ -16,12 +16,9 @@ def enviar_mensagem(numero_telefone: str, mensagem: str):
         "Content-Type": "application/json"
     }
     payload = {
-        "number": numero_telefone,  # Corrigi para "number" em vez de "to"
+        "number": numero_telefone,  # Corrigido para "number"
         "type": "chat",
-        "text": mensagem,
-        "serviceId": "8e473787-7548-417f-83e1-5eb1bd533d6f",
-        "userId" :"d2787b46-36fd-4718-93f7-1c86f0e3cab9",
-        "dontOpenTicket": True
+        "text": mensagem
     }
     response = requests.post(url, json=payload, headers=headers)
     
@@ -47,12 +44,17 @@ async def receive_webhook(request: Request):
 
         # Capturar o número real do telefone do usuário
         contact_id = message_data.get("contactId", "")
-        numero_telefone = message_data.get("idFromService", "")  # Ajustado para buscar o número correto
+        numero_telefone = message_data.get("idFromService", "")
 
-        if not numero_telefone:  # Se "idFromService" não existir, buscar em "data"
+        # Se o número vier no formato "5511976829298@c.us", remover "@c.us"
+        if numero_telefone and "@c.us" in numero_telefone:
+            numero_telefone = numero_telefone.replace("@c.us", "")
+
+        # Se o número não foi encontrado, buscar em "data.number"
+        if not numero_telefone:
             numero_telefone = message_data.get("data", {}).get("number", "")
 
-        text = message_data.get("text", "")  # Evita erro caso text seja None
+        text = message_data.get("text", "").strip()  # Evita erro caso text seja None e remove espaços extras
 
         if not text or not contact_id or not numero_telefone:
             raise HTTPException(status_code=400, detail="Dados inválidos")
