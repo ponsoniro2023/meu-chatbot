@@ -5,8 +5,13 @@ from config import API_BASE_URL, API_TOKEN
 
 app = FastAPI()
 
+# Modelo para a requisição recebida
+class WhatsAppMessage(BaseModel):
+    event: str
+    data: dict
+
 # Número autorizado para testes
-NUMERO_TESTE = "5511976829298"  # Formato correto com DDI do Brasil
+NUMERO_TESTE = "5511976829298"  # Incluindo DDI do Brasil
 
 # Função para enviar mensagem via API do WhatsApp
 def enviar_mensagem(numero_telefone: str, mensagem: str):
@@ -24,7 +29,6 @@ def enviar_mensagem(numero_telefone: str, mensagem: str):
         "dontOpenTicket": True
     
     }
-    
     response = requests.post(url, json=payload, headers=headers)
     
     if response.status_code == 200:
