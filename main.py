@@ -5,23 +5,18 @@ from config import API_BASE_URL, API_TOKEN
 
 app = FastAPI()
 
-# Modelo para a requisição recebida
-class WhatsAppMessage(BaseModel):
-    event: str
-    data: dict
-
 # Número autorizado para testes
-NUMERO_TESTE = "11976829298"
+NUMERO_TESTE = "5511976829298"  # Ajustei para incluir o DDI do Brasil (55)
 
 # Função para enviar mensagem via API do WhatsApp
 def enviar_mensagem(numero_telefone: str, mensagem: str):
-    url = f"{API_BASE_URL}"
+    url = f"{API_BASE_URL}/messages"
     headers = {
         "Authorization": f"Bearer {API_TOKEN}",
         "Content-Type": "application/json"
     }
     payload = {
-        "number": numero_telefone,
+        "number": numero_telefone,  # Corrigi para "number" em vez de "to"
         "type": "chat",
         "text": mensagem,
         "serviceId": "8e473787-7548-417f-83e1-5eb1bd533d6f",
@@ -50,25 +45,26 @@ async def receive_webhook(request: Request):
         print(f"Dados: {message_data}")
         print("============================")
 
-        # Filtrar apenas eventos de mensagens de chat
-        if event_type in ["message.updated", "message.created"] and message_data.get("type") == "chat":
-            text = message_data.get("text", "")  # Evita erro caso text seja None
-            contact_id = message_data.get("contactId", "")
-            numero_telefone = message_data.get("fromId", "")
+        # Capturar o número real do telefone do usuário
+        contact_id = message_data.get("contactId", "")
+        numero_telefone = message_data.get("idFromService", "")  # Ajustado para buscar o número correto
 
-            if not text or not contact_id or not numero_telefone:
-                raise HTTPException(status_code=400, detail="Dados inválidos")
-            
-            print(f"Mensagem recebida de {contact_id} ({numero_telefone}): {text}")
-            
-            # Verifica se a mensagem foi enviada pelo número de teste e se o texto é "teste"
-            if numero_telefone == NUMERO_TESTE and text.lower() == "teste":
-                enviar_mensagem(numero_telefone, "Recebemos sua mensagem de teste!")
-                return {"status": "success", "message": "Mensagem de teste processada!", "event": event_type}
-            
-            return {"status": "ignored", "message": "Número ou mensagem não autorizados para teste.", "event": event_type}
-        else:
-            return {"status": "ignored", "message": "Evento ignorado.", "event": event_type}
+        if not numero_telefone:  # Se "idFromService" não existir, buscar em "data"
+            numero_telefone = message_data.get("data", {}).get("number", "")
+
+        text = message_data.get("text", "")  # Evita erro caso text seja None
+
+        if not text or not contact_id or not numero_telefone:
+            raise HTTPException(status_code=400, detail="Dados inválidos")
+        
+        print(f"Mensagem recebida de {contact_id} ({numero_telefone}): {text}")
+        
+        # Verifica se a mensagem foi enviada pelo número de teste e se o texto é "teste"
+        if numero_telefone == NUMERO_TESTE and text.lower() == "teste":
+            enviar_mensagem(numero_telefone, "Recebemos sua mensagem de teste!")
+            return {"status": "success", "message": "Mensagem de teste processada!", "event": event_type}
+        
+        return {"status": "ignored", "message": "Número ou mensagem não autorizados para teste.", "event": event_type}
     
     except Exception as e:
         print(f"Erro ao processar a requisição: {e}")
