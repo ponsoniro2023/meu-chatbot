@@ -37,7 +37,7 @@ def enviar_mensagem(numero_telefone: str, mensagem: str):
         "Content-Type": "application/json"
     }
     data = {
-        "to": numero_telefone,
+        "number": numero_telefone,
         "type": "chat",
         "text": mensagem,
         "serviceId": "8e473787-7548-417f-83e1-5eb1bd533d6f",
