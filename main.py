@@ -37,7 +37,7 @@ def enviar_mensagem(numero_telefone: str, mensagem: str):
         "Content-Type": "application/json"
     }
     data = {
-        "errr": numero_telefone,
+        "number": numero_telefone,
         "type": "chat",
         "text": mensagem,
         "serviceId": "8e473787-7548-417f-83e1-5eb1bd533d6f",
@@ -90,7 +90,7 @@ async def receive_webhook(request: Request):
         print(f"Comparação com número teste: {numero_telefone == NUMERO_TESTE}")
         
         # Verifica se a mensagem foi enviada pelo número de teste e se o texto é "teste"
-        if numero_telefone == NUMERO_TESTE:
+        if numero_telefone == NUMERO_TESTE and text.lower() == "teste":
             enviar_mensagem(numero_telefone, "Recebemos sua mensagem de teste!")
             return {"status": "success", "message": "Mensagem de teste processada!", "event": event_type}
         
