@@ -91,7 +91,7 @@ async def receive_webhook(request: Request):
         
         # Verifica se a mensagem foi enviada pelo número de teste e se o texto é "teste"
         if numero_telefone == NUMERO_TESTE and text.lower() == "teste":
-            enviar_mensagem(numero_telefone, "Recebemos sua mensagem de teste!")
+            enviar_mensagem(numero_telefone, "Recebemos sua mensagem!")
             return {"status": "success", "message": "Mensagem de teste processada!", "event": event_type}
         
         return {"status": "ignored", "message": "Número ou mensagem não autorizados para teste.", "event": event_type}
