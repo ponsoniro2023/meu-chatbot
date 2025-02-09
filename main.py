@@ -41,9 +41,8 @@ def enviar_mensagem(numero_telefone: str, mensagem: str):
         "type": "chat",
         "text": mensagem,
         "serviceId": "8e473787-7548-417f-83e1-5eb1bd533d6f",
-        "userId" :"d2787b46-36fd-4718-93f7-1c86f0e3cab9",
+        "userId": "d2787b46-36fd-4718-93f7-1c86f0e3cab9",
         "dontOpenTicket": True
-    
     }
     response = requests.post(url, headers=headers, json=data)
     
@@ -72,6 +71,7 @@ async def receive_webhook(request: Request):
         text = message_data.get("text")  # Pode ser None
         contact_id = message_data.get("contactId")  # Pode ser None
         numero_telefone = message_data.get("fromId")  # Pode ser None
+        is_from_me = message_data.get("isFromMe", False)  # Verifica se foi enviado pelo próprio sistema
         
         if not event_type or not text or not contact_id:
             raise HTTPException(status_code=400, detail="Dados obrigatórios ausentes ou inválidos")
@@ -79,6 +79,12 @@ async def receive_webhook(request: Request):
         print(f"Texto recebido: {text}")
         print(f"From ID recebido: {numero_telefone}")
         print(f"Contact ID recebido: {contact_id}")
+        print(f"Mensagem enviada pelo próprio sistema: {is_from_me}")
+        
+        # Se a mensagem foi enviada pelo próprio sistema, não responder
+        if is_from_me:
+            print("Mensagem foi enviada pelo próprio sistema. Ignorando...")
+            return {"status": "ignored", "message": "Mensagem enviada pelo próprio sistema.", "event": event_type}
         
         # Obtém o número de telefone real, se necessário
         if numero_telefone and "@c.us" in numero_telefone:
