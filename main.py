@@ -53,18 +53,15 @@ def enviar_mensagem(numero_telefone: str, mensagem: str):
     return response.status_code
 
 # Função para enviar um comentário e transferir o atendimento para outro departamento
-def enviar_comentario_e_transferir(ticket_id: str, user_id: str, comentario: str, novo_departamento_id: str):
-    url = f"{API_BASE_URL}/tickets/{ticket_id}/transfer"
+def enviar_comentario_e_transferir(contact_id: str, comentario: str, novo_departamento_id: str):
+    url = f"{API_BASE_URL}/api/v1/contacts/{contact_id}/ticket/transfer"
     headers = {
         "Authorization": f"Bearer {API_TOKEN}",
         "Content-Type": "application/json"
     }
     data = {
         "comment": comentario,
-        "departmentId": novo_departamento_id,
-        "userId": user_id,
-        "serviceId": "8e473787-7548-417f-83e1-5eb1bd533d6f",
-        "userId": "d2787b46-36fd-4718-93f7-1c86f0e3cab9"
+        "departmentId": novo_departamento_id
     }
     response = requests.post(url, headers=headers, json=data)
     
@@ -95,7 +92,6 @@ async def receive_webhook(request: Request):
         numero_telefone = message_data.get("fromId")  # Pode ser None
         is_from_me = message_data.get("isFromMe", False)  # Verifica se foi enviado pelo próprio sistema
         ticket_id = message_data.get("ticketId")  # Pode ser None
-        user_id = message_data.get("userId")  # Pode ser None
         
         if not event_type or not text or not contact_id:
             raise HTTPException(status_code=400, detail="Dados obrigatórios ausentes ou inválidos")
@@ -125,8 +121,8 @@ async def receive_webhook(request: Request):
             return {"status": "success", "message": "Mensagem de teste processada!", "event": event_type}
         
         # Se a mensagem for "teste2", transferir o atendimento
-        if numero_telefone == NUMERO_TESTE and text.lower() == "teste2" and ticket_id and user_id:
-            enviar_comentario_e_transferir(ticket_id, user_id, "Transferindo atendimento para outro setor.", "61249740-edcb-4518-9ea6-21c92f775163")
+        if numero_telefone == NUMERO_TESTE and text.lower() == "teste2" and ticket_id:
+            enviar_comentario_e_transferir(contact_id, "Transferindo atendimento para outro setor.", "61249740-edcb-4518-9ea6-21c92f775163")
             return {"status": "success", "message": "Atendimento transferido!", "event": event_type}
         
         return {"status": "ignored", "message": "Número ou mensagem não autorizados para teste.", "event": event_type}
