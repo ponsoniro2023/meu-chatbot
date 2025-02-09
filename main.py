@@ -61,7 +61,7 @@ def enviar_comentario_e_transferir(ticket_id: str, comentario: str, novo_departa
     }
     data = {
         "comment": comentario,
-        "departmentId": "61249740-edcb-4518-9ea6-21c92f775163"
+        "departmentId": novo_departamento_id
     }
     response = requests.post(url, headers=headers, json=data)
     
@@ -122,7 +122,7 @@ async def receive_webhook(request: Request):
         
         # Se a mensagem for "teste2", transferir o atendimento
         if numero_telefone == NUMERO_TESTE and text.lower() == "teste2" and ticket_id:
-            enviar_comentario_e_transferir(ticket_id, "Transferindo atendimento para outro setor.", "NOVO_DEPARTAMENTO_ID")
+            enviar_comentario_e_transferir(ticket_id, "Transferindo atendimento para outro setor.", "61249740-edcb-4518-9ea6-21c92f775163")
             return {"status": "success", "message": "Atendimento transferido!", "event": event_type}
         
         return {"status": "ignored", "message": "Número ou mensagem não autorizados para teste.", "event": event_type}
